@@ -34,6 +34,7 @@ class CalculatorApp(ft.Container):
 
 		self.result = ft.Text(value="0", color=ft.colors.WHITE, size=20)
 		self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
+		self.history_list = ft.Column(visible=False)
 		self.width = 350
 		self.bgcolor = ft.colors.BLACK
 		self.border_radius = ft.border_radius.all(20)
@@ -89,6 +90,12 @@ class CalculatorApp(ft.Container):
 						ExtraActionButton(text="x²", button_clicked=self.button_clicked),
 					]
 				),
+				ft.Row(
+					controls=[
+						ft.ElevatedButton(text="Mostrar Histórico", on_click=self.toggle_history),
+					]
+				),
+				self.history_list
 			]
 		)
 
@@ -170,7 +177,13 @@ class CalculatorApp(ft.Container):
 		self.operand1 = 0
 		self.new_operand = False
 
+	def toggle_history(self, e):
+		self.history_list.visible = not self.history_list.visible
+		self.update()
+
 def main(page: ft.Page):
 	page.title = "Calc App"
 	calc = CalculatorApp()
 	page.add(calc)
+
+	ft.app(target=main)
