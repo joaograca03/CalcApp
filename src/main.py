@@ -45,8 +45,8 @@ class CalculatorApp(ft.Container):
 				ft.Row(
 					controls=[
 						ExtraActionButton(text="AC", button_clicked=self.button_clicked),
-						ExtraActionButton(text="+/-", button_clicked=self.button_clicked),
-						ExtraActionButton(text="%", button_clicked=self.button_clicked),
+						ExtraActionButton(text="CE", button_clicked=self.button_clicked),
+						ExtraActionButton(text="⬅️", button_clicked=self.button_clicked),
 						ActionButton(text="/", button_clicked=self.button_clicked),
 					]
 				),
@@ -81,6 +81,14 @@ class CalculatorApp(ft.Container):
 						ActionButton(text="=", button_clicked=self.button_clicked),
 					]
 				),
+				ft.Row(
+					controls=[
+						ExtraActionButton(text="(", button_clicked=self.button_clicked),
+						ExtraActionButton(text=")", button_clicked=self.button_clicked),
+						ExtraActionButton(text="+/-", button_clicked=self.button_clicked),
+						ExtraActionButton(text="%", button_clicked=self.button_clicked),
+					]
+				),
 			]
 		)
 
@@ -90,7 +98,12 @@ class CalculatorApp(ft.Container):
 			self.expression.value = ""
 			self.result.value = "0"
 			self.reset()
-		elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."):
+		elif data == "CE":
+			self.result.value = "0"
+		elif data == "⬅️":
+			self.result.value = self.result.value[:-1] if len(self.result.value) > 1 else "0"
+			self.expression.value = self.expression.value[:-1] if self.expression.value else ""
+		elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", "(", ")"):
 			if self.result.value == "0" or self.result.value == "Error":
 				self.result.value = data
 			else:
