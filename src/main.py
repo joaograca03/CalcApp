@@ -85,8 +85,8 @@ class CalculatorApp(ft.Container):
 					controls=[
 						ExtraActionButton(text="(", button_clicked=self.button_clicked),
 						ExtraActionButton(text=")", button_clicked=self.button_clicked),
-						ExtraActionButton(text="+/-", button_clicked=self.button_clicked),
-						ExtraActionButton(text="%", button_clicked=self.button_clicked),
+						ExtraActionButton(text="√", button_clicked=self.button_clicked),
+						ExtraActionButton(text="x²", button_clicked=self.button_clicked),
 					]
 				),
 			]
@@ -136,6 +136,12 @@ class CalculatorApp(ft.Container):
 			elif float(self.result.value) < 0:
 				self.result.value = str(abs(float(self.result.value)))
 			self.expression.value = self.result.value
+		elif data == "√":
+			self.result.value = self.format_number(sp.sqrt(float(self.result.value)))
+			self.expression.value = f"√({self.expression.value})"
+		elif data == "x²":
+			self.result.value = self.format_number(float(self.result.value) ** 2)
+			self.expression.value = f"({self.expression.value})²"
 		self.update()
 
 	def format_number(self, num):
@@ -168,5 +174,3 @@ def main(page: ft.Page):
 	page.title = "Calc App"
 	calc = CalculatorApp()
 	page.add(calc)
-
-ft.app(target=main)
