@@ -108,14 +108,14 @@ class CalculatorApp(ft.Container):
 				full_expression = self.expression.value.strip()
 				try:
 					sympy_result = sp.N(sp.sympify(full_expression))
-					self.result.value = str(sympy_result)
+					self.result.value = self.format_number(sympy_result)
 					self.expression.value = f"{full_expression} = {self.result.value}"
 					self.reset()
 				except Exception:
 					self.result.value = "Error"
 					self.expression.value = "Error"
 		elif data == "%":
-			self.result.value = str(float(self.result.value) / 100)
+			self.result.value = self.format_number(float(self.result.value) / 100)
 			self.expression.value += "%"
 		elif data == "+/-":
 			if float(self.result.value) > 0:
@@ -126,10 +126,12 @@ class CalculatorApp(ft.Container):
 		self.update()
 
 	def format_number(self, num):
-		if num % 1 == 0:
-			return int(num)
-		else:
-			return num
+		try:
+			if isinstance(num, (int, float)) and num % 1 == 0:
+				return int(num)
+			return f"{float(num):,.10f}".replace(",", " ").rstrip("0").rstrip(".")
+		except (ValueError, TypeError):
+			return str(num)
 
 	def calculate(self, operand1, operand2, operator):
 		if operator == "+":
@@ -153,3 +155,5 @@ def main(page: ft.Page):
 	page.title = "Calc App"
 	calc = CalculatorApp()
 	page.add(calc)
+
+ft.app(target=main)
