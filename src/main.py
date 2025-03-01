@@ -1,5 +1,6 @@
 import flet as ft
 import sympy as sp
+import datetime
 
 class CalcButton(ft.ElevatedButton):
 	def __init__(self, text, button_clicked, expand=1):
@@ -31,6 +32,7 @@ class CalculatorApp(ft.Container):
 	def __init__(self):
 		super().__init__()
 		self.reset()
+		self.history = []
 
 		self.result = ft.Text(value="0", color=ft.colors.WHITE, size=20)
 		self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
@@ -93,6 +95,7 @@ class CalculatorApp(ft.Container):
 				ft.Row(
 					controls=[
 						ft.ElevatedButton(text="Mostrar Histórico", on_click=self.toggle_history),
+						ft.ElevatedButton(text="Limpar Histórico", on_click=self.clear_history),
 					]
 				),
 				self.history_list
@@ -130,6 +133,7 @@ class CalculatorApp(ft.Container):
 					sympy_result = sp.N(sp.sympify(full_expression))
 					self.result.value = self.format_number(sympy_result)
 					self.expression.value = f"{full_expression} = {self.result.value}"
+					self.add_to_history(full_expression, self.result.value)
 					self.reset()
 				except Exception:
 					self.result.value = "Error"
@@ -177,13 +181,40 @@ class CalculatorApp(ft.Container):
 		self.operand1 = 0
 		self.new_operand = False
 
+	def add_to_history(self, expression, result):
+		timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		entry = {"expression": expression, "result": result, "time": timestamp}
+		self.history.insert(0, entry)
+		if len(self.history) > 10:
+			self.history.pop()
+
 	def toggle_history(self, e):
 		self.history_list.visible = not self.history_list.visible
+		if self.history_list.visible:
+			self.history_list.controls = [
+				ft.Row(
+					[
+						ft.Text(f"{i+1}. {item['time']} - {item['expression']} = {item['result']}"),
+						ft.IconButton(icon=ft.icons.COPY, on_click=lambda _, r=item['result']: self.page.set_clipboard(r)),
+						ft.IconButton(icon=ft.icons.DELETE, on_click=lambda _, idx=i: self.delete_from_history(idx))
+					]
+				)
+				for i, item in enumerate(self.history)
+			]
 		self.update()
+
+	def delete_from_history(self, idx):
+		if 0 <= idx < len(self.history):
+			self.history.pop(idx)
+			self.toggle_history(None)
+
+	def clear_history(self, e):
+		self.history = []
+		self.toggle_history(None)
 
 def main(page: ft.Page):
 	page.title = "Calc App"
 	calc = CalculatorApp()
 	page.add(calc)
 
-	ft.app(target=main)
+ft.app(target=main)
