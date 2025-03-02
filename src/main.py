@@ -29,10 +29,11 @@ class ExtraActionButton(CalcButton):
 		self.color = ft.colors.BLACK
 
 class CalculatorApp(ft.Container):
-	def __init__(self):
+	def __init__(self, page):
 		super().__init__()
+		self.page = page
 		self.reset()
-		self.history = []
+		self.history = self.load_history()
 
 		self.result = ft.Text(value="0", color=ft.colors.WHITE, size=20)
 		self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
@@ -187,6 +188,7 @@ class CalculatorApp(ft.Container):
 		self.history.insert(0, entry)
 		if len(self.history) > 10:
 			self.history.pop()
+		self.save_history()
 
 	def toggle_history(self, e):
 		self.history_list.visible = not self.history_list.visible
@@ -206,15 +208,22 @@ class CalculatorApp(ft.Container):
 	def delete_from_history(self, idx):
 		if 0 <= idx < len(self.history):
 			self.history.pop(idx)
+			self.save_history()
 			self.toggle_history(None)
 
 	def clear_history(self, e):
 		self.history = []
+		self.save_history()
 		self.toggle_history(None)
+
+	def save_history(self):
+		self.page.client_storage.set("calc_history", self.history)
+
+	def load_history(self):
+		history = self.page.client_storage.get("calc_history")
+		return history if history is not None else []
 
 def main(page: ft.Page):
 	page.title = "Calc App"
-	calc = CalculatorApp()
+	calc = CalculatorApp(page)
 	page.add(calc)
-
-ft.app(target=main)
