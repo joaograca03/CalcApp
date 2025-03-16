@@ -1,3 +1,4 @@
+#Caso a linha do entrypoint nao apareça adicionar: entrypoint = "src/main.py"
 entrypoint = "src/main.py"
 modules = ["python-3.11"]
 
