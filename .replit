@@ -1,5 +1,4 @@
-#Caso a linha do entrypoint nao apareça adicionar: entrypoint = "src/main.py"
-entrypoint = "src/main.py"
+entrypoint = "main.py"
 modules = ["python-3.11"]
 
 [nix]
@@ -12,7 +11,7 @@ language = "python3"
 requiredFiles = [".replit", "replit.nix"]
 
 [deployment]
-run = ["python3", "src/main.py"]
+run = ["python3", "main.py"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
