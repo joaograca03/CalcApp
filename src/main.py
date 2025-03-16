@@ -291,4 +291,4 @@ def main(page: ft.Page):
     calc = CalculatorApp(page)
     page.add(calc)
 
-ft.app(target=main)
+ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
