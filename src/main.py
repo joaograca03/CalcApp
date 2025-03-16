@@ -93,7 +93,7 @@ class CalculatorApp(ft.Container):
                             ExtraActionButton(text="(", button_clicked=self.button_clicked),
                             ExtraActionButton(text=")", button_clicked=self.button_clicked),
                             ExtraActionButton(text="√", button_clicked=self.button_clicked),
-                            ExtraActionButton(text="x²", button_clicked=self.button_clicked),
+                            ExtraActionButton(text="⌫", button_clicked=self.button_clicked),  # Botão de backspace adicionado
                         ]
                     ),
                     ft.Row(
@@ -142,7 +142,7 @@ class CalculatorApp(ft.Container):
             self.result.value = self.current_expression
 
         elif data in ("+", "-", "*", "/"):
-            self.current_expression += f"{data}"  # Espaços para compatibilidade com sympy
+            self.current_expression += f"{data}"
             self.result.value = self.current_expression
 
         elif data == "=":
@@ -197,6 +197,14 @@ class CalculatorApp(ft.Container):
                         self.result.value = "Error"
                 except ValueError:
                     pass
+
+        elif data == "⌫":  # Lógica do backspace
+            if self.current_expression:
+                self.current_expression = self.current_expression[:-1]  # Remove o último caractere
+                if not self.current_expression:  # Se a expressão ficar vazia, volta para "0"
+                    self.result.value = "0"
+                else:
+                    self.result.value = self.current_expression
 
         elif data == "x²":
             parts = self.current_expression.split()
