@@ -37,8 +37,8 @@ class CalculatorApp(ft.Container):
         self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
         self.history = self.load_history()
         self.history_list = ft.Column(visible=False)
-        self.current_expression = ""  # Variável para a expressão em construção
-        self.last_was_equal = False  # Controle para após o "="
+        self.current_expression = ""  
+        self.last_was_equal = False  
 
         self.content = ft.Container(
             width=400,
@@ -93,7 +93,7 @@ class CalculatorApp(ft.Container):
                             ExtraActionButton(text="(", button_clicked=self.button_clicked),
                             ExtraActionButton(text=")", button_clicked=self.button_clicked),
                             ExtraActionButton(text="√", button_clicked=self.button_clicked),
-                            ExtraActionButton(text="⌫", button_clicked=self.button_clicked),  # Botão de backspace adicionado
+                            ExtraActionButton(text="⌫", button_clicked=self.button_clicked),  
                         ]
                     ),
                     ft.Row(
@@ -111,7 +111,7 @@ class CalculatorApp(ft.Container):
         self.operator = None
         self.operand1 = 0
         self.new_operand = False
-        self.current_expression = ""  # Reseta a expressão atual
+        self.current_expression = ""  
         self.last_was_equal = False
 
     def format_number(self, num):
@@ -125,7 +125,7 @@ class CalculatorApp(ft.Container):
     def button_clicked(self, e):
         data = e.control.data
 
-        # Após "=", limpa para nova entrada, exceto se for "AC"
+        
         if self.last_was_equal and data not in ("AC", "="):
             self.current_expression = ""
             self.expression.value = ""
@@ -160,17 +160,40 @@ class CalculatorApp(ft.Container):
                     self.current_expression = ""
 
         elif data == "+/-":
-            parts = self.current_expression.split()
-            if parts:
-                last_part = parts[-1]
-                if last_part.replace(".", "", 1).isdigit():
-                    if last_part.startswith("-"):
-                        parts[-1] = last_part[1:]
-                    else:
-                        parts[-1] = "-" + last_part
-                    self.current_expression = " ".join(parts)
-                    self.result.value = self.current_expression
-
+            if self.current_expression:
+                if self.current_expression.endswith(")"):
+                    i = len(self.current_expression) - 1
+                    paren_count = 0
+                    while i >= 0:
+                        if self.current_expression[i] == ")":
+                            paren_count += 1
+                        elif self.current_expression[i] == "(":
+                            paren_count -= 1
+                            if paren_count == 0:
+                                break
+                        i -= 1
+                    if i >= 0 and i + 1 < len(self.current_expression):
+                        prefix = self.current_expression[i:i+2]
+                        if prefix == "(-":
+                            number = self.current_expression[i+2:-1]
+                            self.current_expression = self.current_expression[:i] + "(+" + number + ")"
+                        elif prefix == "(+":
+                            number = self.current_expression[i+2:-1]
+                            self.current_expression = self.current_expression[:i] + "(-" + number + ")"
+                        else:
+                            number = self.current_expression[i+1:-1]
+                            self.current_expression = self.current_expression[:i] + "(-" + number + ")"
+                else:
+                    i = len(self.current_expression) - 1
+                    while i >= 0 and (self.current_expression[i].isdigit() or self.current_expression[i] == "."):
+                        i -= 1
+                    last_number_start = i + 1
+                    last_number = self.current_expression[last_number_start:]
+                    if last_number and last_number.replace(".", "", 1).isdigit():
+                        self.current_expression = self.current_expression[:last_number_start] + "(-" + last_number + ")"
+                
+                self.result.value = self.current_expression
+                
         elif data == "%":
             parts = self.current_expression.split()
             if parts:
@@ -198,10 +221,10 @@ class CalculatorApp(ft.Container):
                 except ValueError:
                     pass
 
-        elif data == "⌫":  # Lógica do backspace
+        elif data == "⌫":  
             if self.current_expression:
-                self.current_expression = self.current_expression[:-1]  # Remove o último caractere
-                if not self.current_expression:  # Se a expressão ficar vazia, volta para "0"
+                self.current_expression = self.current_expression[:-1]  
+                if not self.current_expression:  
                     self.result.value = "0"
                 else:
                     self.result.value = self.current_expression
