@@ -190,7 +190,7 @@ class CalculatorApp(ft.Container):
                 try:
                     num = float(last_part)
                     if num >= 0:
-                        parts[-1] = f"√({last_part})"
+                        parts[-1] = f"sqrt({last_part})"
                         self.current_expression = " ".join(parts)
                         self.result.value = self.current_expression
                     else:
