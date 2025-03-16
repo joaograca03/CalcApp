@@ -37,8 +37,9 @@ class CalculatorApp(ft.Container):
         self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
         self.history = self.load_history()
         self.history_list = ft.Column(visible=False)
-        self.last_was_equal = False  # Novo controle para após o "="
-       
+        self.current_expression = ""  # Variável para a expressão em construção
+        self.last_was_equal = False  # Controle para após o "="
+
         self.content = ft.Container(
             width=400,
             bgcolor=ft.colors.BLACK,
@@ -110,135 +111,105 @@ class CalculatorApp(ft.Container):
         self.operator = None
         self.operand1 = 0
         self.new_operand = False
+        self.current_expression = ""  # Reseta a expressão atual
+        self.last_was_equal = False
 
     def format_number(self, num):
-        try:
-            if isinstance(num, (int, float)) and num % 1 == 0:
-                return int(num)
-            return f"{float(num):,.10f}".replace(",", " ").rstrip("0").rstrip(".")
-        except (ValueError, TypeError):
-            return str(num)
-
-    def calculate(self, operand1, operand2, operator):
-        try:
-            if operator == "+":
-                return self.format_number(operand1 + operand2)
-            elif operator == "-":
-                return self.format_number(operand1 - operand2)
-            elif operator == "*":
-                return self.format_number(operand1 * operand2)
-            elif operator == "/":
-                if operand2 == 0:
-                    return "Error"
-                return self.format_number(operand1 / operand2)
-        except Exception:
-            return "Error"
+        if isinstance(num, sp.Number):
+            num = float(num)
+        if num.is_integer():
+            return int(num)
+        else:
+            return f"{num:.10f}".rstrip("0").rstrip(".")
 
     def button_clicked(self, e):
         data = e.control.data
-       
-        # Se o último clique foi "=" e um novo botão é clicado, limpa a expressão
-        if self.last_was_equal and data != "AC":
+
+        # Após "=", limpa para nova entrada, exceto se for "AC"
+        if self.last_was_equal and data not in ("AC", "="):
+            self.current_expression = ""
             self.expression.value = ""
             self.last_was_equal = False
-           
+
         if data == "AC":
+            self.current_expression = ""
             self.expression.value = ""
             self.result.value = "0"
             self.reset()
-           
+
         elif data in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", ".", "(", ")"):
-            if self.result.value == "0" or self.result.value == "Error":
-                self.result.value = data
-            else:
-                self.result.value += data
-            self.expression.value += data
-            self.new_operand = False
-           
+            self.current_expression += data
+            self.result.value = self.current_expression
+
         elif data in ("+", "-", "*", "/"):
-            if self.new_operand:  # Substitui o operador anterior se já houver um
-                self.expression.value = self.expression.value[:-1] + data
-            else:
-                self.expression.value += f" {data}"
-            if self.operator and not self.new_operand:
-                self.result.value = self.calculate(
-                    float(self.operand1), float(self.result.value), self.operator
-                )
-            self.operator = data
-            self.operand1 = float(self.result.value) if self.result.value != "Error" else 0
-            self.new_operand = True
-           
+            self.current_expression += f"{data}"  # Espaços para compatibilidade com sympy
+            self.result.value = self.current_expression
+
         elif data == "=":
-            if self.expression.value:
-                full_expression = self.expression.value.strip()
+            if self.current_expression:
                 try:
-                    sympy_result = sp.N(sp.sympify(full_expression))
+                    sympy_result = sp.N(sp.sympify(self.current_expression))
+                    self.expression.value = self.current_expression
                     self.result.value = self.format_number(sympy_result)
-                    self.expression.value = f"{full_expression} = {self.result.value}"
-                    self.add_to_history(full_expression, self.result.value)
-                    self.reset()
+                    self.add_to_history(self.current_expression, self.result.value)
+                    self.current_expression = ""
                     self.last_was_equal = True
                 except Exception:
                     self.result.value = "Error"
                     self.expression.value = "Error"
-                   
+                    self.current_expression = ""
+
         elif data == "+/-":
-            try:
-                current = float(self.result.value)
-                if current > 0:
-                    self.result.value = f"-{self.result.value}"
-                elif current < 0:
-                    self.result.value = str(abs(current))
-                # Atualiza a expressão
-                if self.expression.value:
-                    parts = self.expression.value.split()
-                    if parts and parts[-1] not in ("+", "-", "*", "/"):
-                        parts[-1] = self.result.value
-                        self.expression.value = " ".join(parts)
+            parts = self.current_expression.split()
+            if parts:
+                last_part = parts[-1]
+                if last_part.replace(".", "", 1).isdigit():
+                    if last_part.startswith("-"):
+                        parts[-1] = last_part[1:]
                     else:
-                        self.expression.value += f" {self.result.value}"
-            except ValueError:
-                pass
-               
+                        parts[-1] = "-" + last_part
+                    self.current_expression = " ".join(parts)
+                    self.result.value = self.current_expression
+
         elif data == "%":
-            try:
-                self.result.value = self.format_number(float(self.result.value) / 100)
-                if self.expression.value:
-                    parts = self.expression.value.split()
-                    if parts and parts[-1] not in ("+", "-", "*", "/"):
-                        parts[-1] = self.result.value
-                        self.expression.value = " ".join(parts)
-                    else:
-                        self.expression.value += f" {self.result.value}"
-            except ValueError:
-                self.result.value = "Error"
-               
+            parts = self.current_expression.split()
+            if parts:
+                last_part = parts[-1]
+                try:
+                    num = float(last_part)
+                    parts[-1] = str(num / 100)
+                    self.current_expression = " ".join(parts)
+                    self.result.value = self.current_expression
+                except ValueError:
+                    pass
+
         elif data == "√":
-            try:
-                self.result.value = self.format_number(sp.sqrt(float(self.result.value)))
-                if self.expression.value:
-                    parts = self.expression.value.split()
-                    if parts and parts[-1] not in ("+", "-", "*", "/"):
-                        parts[-1] = f"√({parts[-1]})"
-                        self.expression.value = " ".join(parts)
+            parts = self.current_expression.split()
+            if parts:
+                last_part = parts[-1]
+                try:
+                    num = float(last_part)
+                    if num >= 0:
+                        parts[-1] = f"√({last_part})"
+                        self.current_expression = " ".join(parts)
+                        self.result.value = self.current_expression
                     else:
-                        self.expression.value += f" √({self.result.value})"
-            except ValueError:
-                self.result.value = "Error"
-               
+                        self.result.value = "Error"
+                except ValueError:
+                    pass
+
         elif data == "x²":
-            try:
-                self.result.value = self.format_number(float(self.result.value) ** 2)
-                if self.expression.value:
-                    parts = self.expression.value.split()
-                    if parts and parts[-1] not in ("+", "-", "*", "/"):
-                        parts[-1] = f"({parts[-1]})²"
-                        self.expression.value = " ".join(parts)
-                    else:
-                        self.expression.value += f" ({self.result.value})²"
-            except ValueError:
-                self.result.value = "Error"
-               
+            parts = self.current_expression.split()
+            if parts:
+                last_part = parts[-1]
+                try:
+                    num = float(last_part)
+                    parts[-1] = f"({last_part})**2"
+                    self.current_expression = " ".join(parts)
+                    self.result.value = self.current_expression
+                except ValueError:
+                    pass
+
         self.update()
 
     def add_to_history(self, expression, result):
@@ -289,4 +260,4 @@ def main(page: ft.Page):
     calc = CalculatorApp(page)
     page.add(calc)
 
-ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
+ft.app(target=main)
