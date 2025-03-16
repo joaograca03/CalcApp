@@ -1,40 +1,10 @@
 [project]
-name = "calculadora"
+name = "python-template"
 version = "0.1.0"
-description = "Uma calculadora avançada com interface gráfica"
-readme = "README.md"
-requires-python = ">=3.9"
-authors = [
-    { name = "Flet developer", email = "you@example.com" }
-]
+description = ""
+authors = ["Your Name <you@example.com>"]
+requires-python = ">=3.11"
 dependencies = [
-    "flet==0.26.0",
-    "sympy==1.12"  # Adicionando sympy com uma versão específica
+    "flet>=0.27.6",
+    "sympy>=1.13.3",
 ]
-
-[tool.flet]
-# Configurações opcionais do Flet para builds de apps (Android/iOS/desktop)
-org = "com.mycompany"
-product = "calculadora"
-company = "Flet"
-copyright = "Copyright (C) 2025 by Flet"
-
-[tool.flet.app]
-path = "src"  # Ajuste se o código estiver em uma pasta src; caso contrário, pode remover esta seção
-
-[tool.uv]
-dev-dependencies = [
-    "flet[all]==0.26.0",  # Dependências de desenvolvimento, se necessário
-    "sympy==1.12"         # Incluindo sympy também aqui, se usar ferramentas como uv
-]
-
-[tool.poetry]
-package-mode = false  # Mantido como no original
-
-[tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.26.0"}  # Mantido para compatibilidade com Poetry
-sympy = "1.12"                                 # Adicionado sympy no grupo de desenvolvimento
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]  # Necessário para builds com Poetry
-build-backend = "poetry.core.masonry.api"
