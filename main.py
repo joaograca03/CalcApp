@@ -98,6 +98,14 @@ class CalculatorApp(ft.Container):
                     ),
                     ft.Row(
                         controls=[
+                            ExtraActionButton(text="sin", button_clicked=self.button_clicked),
+                            ExtraActionButton(text="cos", button_clicked=self.button_clicked),
+                            ExtraActionButton(text="tan", button_clicked=self.button_clicked),
+                            ExtraActionButton(text="π", button_clicked=self.button_clicked),
+                        ]
+                    ),
+                    ft.Row(
+                        controls=[
                             ft.ElevatedButton(text="Mostrar Histórico", on_click=self.toggle_history),
                             ft.ElevatedButton(text="Limpar Histórico", on_click=self.clear_history),
                         ]
@@ -125,7 +133,6 @@ class CalculatorApp(ft.Container):
     def button_clicked(self, e):
         data = e.control.data
 
-        
         if self.last_was_equal and data not in ("AC", "="):
             self.current_expression = ""
             self.expression.value = ""
@@ -148,7 +155,10 @@ class CalculatorApp(ft.Container):
         elif data == "=":
             if self.current_expression:
                 try:
-                    sympy_result = sp.N(sp.sympify(self.current_expression))
+                    # Substituir π por seu valor numérico para SymPy
+                    expr = self.current_expression.replace("π", str(sp.pi))
+                    # Avaliar a expressão diretamente, assumindo radianos para funções trigonométricas
+                    sympy_result = sp.N(sp.sympify(expr))
                     self.expression.value = self.current_expression
                     self.result.value = self.format_number(sympy_result)
                     self.add_to_history(self.current_expression, self.result.value)
@@ -191,7 +201,6 @@ class CalculatorApp(ft.Container):
                     last_number = self.current_expression[last_number_start:]
                     if last_number and last_number.replace(".", "", 1).isdigit():
                         self.current_expression = self.current_expression[:last_number_start] + "(-" + last_number + ")"
-                
                 self.result.value = self.current_expression
                 
         elif data == "%":
@@ -229,17 +238,13 @@ class CalculatorApp(ft.Container):
                 else:
                     self.result.value = self.current_expression
 
-        elif data == "x²":
-            parts = self.current_expression.split()
-            if parts:
-                last_part = parts[-1]
-                try:
-                    num = float(last_part)
-                    parts[-1] = f"({last_part})**2"
-                    self.current_expression = " ".join(parts)
-                    self.result.value = self.current_expression
-                except ValueError:
-                    pass
+        elif data in ("sin", "cos", "tan"):
+            self.current_expression += f"{data}("
+            self.result.value = self.current_expression
+
+        elif data == "π":
+            self.current_expression += "π"
+            self.result.value = self.current_expression
 
         self.update()
 
@@ -291,5 +296,5 @@ def main(page: ft.Page):
     calc = CalculatorApp(page)
     page.add(calc)
 
-ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
-#ft.app(target=main)
+#ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
+ft.app(target=main)
