@@ -155,9 +155,7 @@ class CalculatorApp(ft.Container):
         elif data == "=":
             if self.current_expression:
                 try:
-                    # Substituir π por seu valor numérico para SymPy
                     expr = self.current_expression.replace("π", str(sp.pi))
-                    # Avaliar a expressão diretamente, assumindo radianos para funções trigonométricas
                     sympy_result = sp.N(sp.sympify(expr))
                     self.expression.value = self.current_expression
                     self.result.value = self.format_number(sympy_result)
@@ -269,7 +267,11 @@ class CalculatorApp(ft.Container):
             self.history_list.controls = [
                 ft.Row(
                     [
-                        ft.Text(f"{i+1}. {item['expression']} = {item['result']} ({item['time']})"),
+                        ft.Text(f"{i+1}. {item['expression']} = {item['result']}"),
+                        ft.IconButton(
+                            icon=ft.icons.INFO_OUTLINE,
+                            tooltip=f"Realizado em: {item['time']}",
+                        ),
                         ft.IconButton(icon=ft.icons.COPY, on_click=lambda _, r=item['result']: self.page.set_clipboard(r)),
                         ft.IconButton(icon=ft.icons.DELETE, on_click=lambda _, idx=i: self.delete_from_history(idx))
                     ]
