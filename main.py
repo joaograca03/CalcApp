@@ -264,7 +264,7 @@ class CalculatorApp(ft.Container):
             self.history_list.controls = [
                 ft.Row(
                     [
-                        ft.Text(f"{i+1}. {item['expression']} = {item['result']}"),
+                        ft.Text(f"{i+1}. {item['expression']} = {item['result']} ({item['time']})"),
                         ft.IconButton(icon=ft.icons.COPY, on_click=lambda _, r=item['result']: self.page.set_clipboard(r)),
                         ft.IconButton(icon=ft.icons.DELETE, on_click=lambda _, idx=i: self.delete_from_history(idx))
                     ]
@@ -292,3 +292,4 @@ def main(page: ft.Page):
     page.add(calc)
 
 ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
+#ft.app(target=main)
