@@ -302,9 +302,6 @@ class CalculatorApp(ft.Container):
     def copy_to_clipboard(self, e):
         result = e.control.data
         self.page.set_clipboard(str(result))
-        self.page.show_snack_bar(
-            ft.SnackBar(ft.Text(f"Resultado '{result}' copiado!"), open=True)
-        )
 
     def delete_from_history(self, e):
         idx = e.control.data
