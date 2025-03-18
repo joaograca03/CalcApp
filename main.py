@@ -36,7 +36,12 @@ class CalculatorApp(ft.Container):
         self.result = ft.Text(value="0", color=ft.colors.WHITE, size=32)
         self.expression = ft.Text(value="", color=ft.colors.GREY_500, size=24)
         self.history = self.load_history()
-        self.history_list = ft.Column(visible=False)
+        self.history_list = ft.ListView(
+            visible=False,
+            height=200,
+            auto_scroll=False,
+            padding=10
+        )
         self.current_expression = ""  
         self.last_was_equal = False  
 
@@ -253,6 +258,8 @@ class CalculatorApp(ft.Container):
         if len(self.history) > 10:
             self.history.pop()
         self.save_history()
+        if self.history_list.visible:
+            self.toggle_history(None)
 
     def save_history(self):
         self.page.client_storage.set("calc_history", self.history)
@@ -264,23 +271,43 @@ class CalculatorApp(ft.Container):
     def toggle_history(self, e):
         self.history_list.visible = not self.history_list.visible
         if self.history_list.visible:
-            self.history_list.controls = [
-                ft.Row(
-                    [
-                        ft.Text(f"{i+1}. {item['expression']} = {item['result']}"),
-                        ft.IconButton(
-                            icon=ft.icons.INFO_OUTLINE,
-                            tooltip=f"Realizado em: {item['time']}",
-                        ),
-                        ft.IconButton(icon=ft.icons.COPY, on_click=lambda _, r=item['result']: self.page.set_clipboard(r)),
-                        ft.IconButton(icon=ft.icons.DELETE, on_click=lambda _, idx=i: self.delete_from_history(idx))
-                    ]
+            self.history_list.controls.clear()
+            for i, item in enumerate(self.history):
+                history_item = ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            ft.Text(f"{i+1}. {item['expression']} = {item['result']}", expand=True),
+                            ft.IconButton(
+                                icon=ft.icons.INFO_OUTLINE,
+                                tooltip=f"Realizado em: {item['time']}",
+                            ),
+                            ft.IconButton(
+                                icon=ft.icons.COPY,
+                                tooltip="Copiar resultado",
+                                data=item['result'],
+                                on_click=self.copy_to_clipboard
+                            ),
+                            ft.IconButton(
+                                icon=ft.icons.DELETE,
+                                data=i,
+                                on_click=self.delete_from_history
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    )
                 )
-                for i, item in enumerate(self.history)
-            ]
+                self.history_list.controls.append(history_item)
         self.update()
 
-    def delete_from_history(self, idx):
+    def copy_to_clipboard(self, e):
+        result = e.control.data
+        self.page.set_clipboard(str(result))
+        self.page.show_snack_bar(
+            ft.SnackBar(ft.Text(f"Resultado '{result}' copiado!"), open=True)
+        )
+
+    def delete_from_history(self, e):
+        idx = e.control.data
         if 0 <= idx < len(self.history):
             self.history.pop(idx)
             self.save_history()
@@ -297,6 +324,6 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     calc = CalculatorApp(page)
     page.add(calc)
-
+    
 #ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=3000)
 ft.app(target=main)
